@@ -1,0 +1,190 @@
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.user-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.user-table th {
+  padding: 0.75rem 1rem;
+  background: var(--muted);
+  color: var(--muted-foreground);
+  font-weight: 500;
+  font-size: 0.8125rem;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+.user-table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--border);
+  color: var(--foreground);
+  vertical-align: middle;
+}
+
+.user-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.user-table tbody tr:hover {
+  background-color: var(--muted);
+}
+
+/* User info cell */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--foreground);
+  font-weight: 600;
+  font-size: 0.75rem;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.user-name {
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.text-secondary {
+  color: var(--muted-foreground);
+}
+
+/* Status Badge */
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+}
+
+.status-badge--Active {
+  background: var(--status-active-bg);
+  color: var(--status-active-text);
+  border-color: rgba(22, 101, 52, 0.15);
+}
+
+.status-badge--Inactive {
+  background: var(--status-inactive-bg);
+  color: var(--status-inactive-text);
+  border-color: var(--border);
+}
+
+.status-badge--Deleted {
+  background: var(--status-banned-bg);
+  color: var(--status-banned-text);
+  border-color: rgba(153, 27, 27, 0.15);
+}
+
+/* Status select dropdown (sits under the badge) */
+.status-cell {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.status-select-overlay {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  gap: 0.25rem;
+  justify-content: flex-end;
+}
+
+.action-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.action-btn:hover {
+  background-color: var(--muted);
+  color: var(--foreground);
+}
+
+.action-btn.delete:hover {
+  background-color: var(--status-banned-bg);
+  color: var(--status-banned-text);
+}
+
+.action-btn.status-deactivate:hover {
+  background-color: var(--status-banned-bg);
+  color: var(--status-banned-text);
+}
+
+.action-btn.status-activate:hover {
+  background-color: var(--status-active-bg);
+  color: var(--status-active-text);
+}
+
+/* Checkbox */
+.custom-checkbox {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--input);
+  border-radius: 3px;
+  background: var(--background);
+  cursor: pointer;
+  position: relative;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+
+.custom-checkbox:checked {
+  background-color: var(--primary);
+  border-color: var(--primary);
+}
+
+.custom-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 4px;
+  height: 8px;
+  border: solid var(--primary-foreground);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}

@@ -1,0 +1,103 @@
+.signup-card {
+  max-width: 460px;
+}
+
+.optional-tag {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--muted-foreground);
+  margin-left: 0.25rem;
+}
+
+/* Upload Zone */
+.upload-zone {
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background-color 0.15s;
+  background: var(--background);
+  text-align: center;
+}
+
+.upload-zone:hover,
+.upload-zone--active {
+  border-color: var(--ring);
+  background-color: var(--muted);
+}
+
+.upload-zone--filled {
+  border-style: solid;
+  padding: 0.75rem;
+}
+
+/* Placeholder state */
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.upload-placeholder-icon {
+  color: var(--muted-foreground);
+  margin-bottom: 0.25rem;
+}
+
+.upload-main-text {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+.upload-click-text {
+  color: var(--foreground);
+  font-weight: 500;
+}
+
+.upload-sub-text {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}
+
+/* Preview state */
+.upload-preview {
+  position: relative;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.upload-preview-img {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--border);
+}
+
+.upload-remove-btn {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--foreground);
+  color: var(--primary-foreground);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.upload-remove-btn:hover {
+  opacity: 0.7;
+}
+
+.upload-hint {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}

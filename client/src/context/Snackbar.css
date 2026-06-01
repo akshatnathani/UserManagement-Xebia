@@ -1,0 +1,116 @@
+.snackbar-container {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  z-index: 9999;
+  max-width: 400px;
+  width: calc(100vw - 3rem);
+  pointer-events: none;
+}
+
+.snackbar-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1.25rem;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02);
+  backdrop-filter: blur(8px);
+  pointer-events: auto;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Slide in animation from right */
+@keyframes slideIn {
+  from {
+    transform: translateX(120%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.snackbar-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex: 1;
+}
+
+.snackbar-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.snackbar-icon--success {
+  color: #22c55e;
+}
+
+.snackbar-icon--error {
+  color: #ef4444;
+}
+
+.snackbar-icon--info {
+  color: #3b82f6;
+}
+
+.snackbar-message {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.snackbar-close {
+  color: var(--muted-foreground);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s, color 0.15s;
+  background: transparent;
+  border: none;
+}
+
+.snackbar-close:hover {
+  background-color: var(--muted);
+  color: var(--foreground);
+}
+
+/* Custom left indicators for type */
+.snackbar-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+}
+
+.snackbar-item--success::before {
+  background-color: #22c55e;
+}
+
+.snackbar-item--error::before {
+  background-color: #ef4444;
+}
+
+.snackbar-item--info::before {
+  background-color: #3b82f6;
+}
