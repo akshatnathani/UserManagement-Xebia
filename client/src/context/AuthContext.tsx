@@ -15,8 +15,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => !!localStorage.getItem('token'));
+  const [userRole, setUserRole] = useState<string | null>(() => localStorage.getItem('role'));
   const [user, setUser] = useState<any | null>(null);
 
   const refreshUser = async () => {
@@ -33,7 +33,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      setIsAuthenticated(true);
       refreshUser();
     }
   }, []);

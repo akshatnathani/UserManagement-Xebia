@@ -111,11 +111,86 @@ exports.deleteUser = asyncHandler(async (req, res, next) => {
     return next(new ApiError(404, "User not found"));
   }
 
+  // Delete profile picture from disk if it exists to prevent orphaned files
+  if (user.profilePicture) {
+    const relativePath = user.profilePicture.startsWith("/uploads") 
+      ? user.profilePicture 
+      : `/uploads/profiles/${user.profilePicture}`;
+    const FileStorageService = require("../services/FileStorageService");
+    FileStorageService.deleteFile(relativePath);
+  }
+
   await user.deleteOne();
 
   res.status(200).json({
     success: true,
     data: {},
     message: "User deleted successfully",
+  });
+});
+
+/**
+ * Updates an existing user record.
+ * Handles uploading a new profile picture (deleting the old one if updated),
+ * hashing the password with Argon2 if changed, and updating name, email, phone, and role.
+ *
+ * @author akshatnathani
+ * @version 1.1.0
+ * @function updateUser
+ * @param {Object} req - Express request containing name, email, phone, password, role, and req.file
+ * @param {Object} res - Express response
+ * @param {Function} next - Express next middleware
+ */
+exports.updateUser = asyncHandler(async (req, res, next) => {
+  const { id } = req.params;
+  const { name, email, phone, password, role } = req.body;
+
+  const user = await User.findById(id);
+  if (!user) {
+    return next(new ApiError(404, "User not found"));
+  }
+
+  // Check email/phone uniqueness if changed
+  if (email && email !== user.email) {
+    const emailExists = await User.findOne({ email });
+    if (emailExists) return next(new ApiError(400, "Email is already taken"));
+    user.email = email;
+  }
+
+  if (phone && phone !== user.phone) {
+    const phoneExists = await User.findOne({ phone });
+    if (phoneExists) return next(new ApiError(400, "Phone number is already taken"));
+    user.phone = phone;
+  }
+
+  if (name) {
+    user.name = name;
+  }
+
+  if (role) {
+    user.role = role;
+  }
+
+  if (password) {
+    user.password = await argon2.hash(password);
+  }
+
+  if (req.file) {
+    // Delete the old profile picture file if it exists
+    if (user.profilePicture) {
+      const relativePath = user.profilePicture.startsWith("/uploads") 
+        ? user.profilePicture 
+        : `/uploads/profiles/${user.profilePicture}`;
+      const FileStorageService = require("../services/FileStorageService");
+      FileStorageService.deleteFile(relativePath);
+    }
+    user.profilePicture = `/uploads/profiles/${req.file.filename}`;
+  }
+
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    data: user
   });
 });

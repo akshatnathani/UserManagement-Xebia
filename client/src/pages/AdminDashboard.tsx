@@ -130,6 +130,125 @@ export default function AdminDashboard() {
     }
   };
 
+  // Edit Modal states
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [editFormData, setEditFormData] = useState({ name: '', email: '', contact: '', password: '', role: 'User' });
+  const [editProfileImage, setEditProfileImage] = useState<File | null>(null);
+  const [editPreviewUrl, setEditPreviewUrl] = useState<string | null>(null);
+  const [editDragActive, setEditDragActive] = useState(false);
+  const [editModalError, setEditModalError] = useState('');
+  const [editModalLoading, setEditModalLoading] = useState(false);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleEditClick = (user: User) => {
+    setEditingUser(user);
+    setEditFormData({
+      name: user.fullName,
+      email: user.email,
+      contact: user.contact || '',
+      password: '', // leave empty to not change
+      role: user.role
+    });
+    setEditProfileImage(null);
+    setEditPreviewUrl(user.profilePicture ? (user.profilePicture.startsWith('http') ? user.profilePicture : `http://localhost:5000${user.profilePicture}`) : null);
+    setEditModalError('');
+    setEditModalLoading(false);
+    setIsEditModalOpen(true);
+  };
+
+  const handleEditModalChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    setEditFormData({ ...editFormData, [e.target.id]: e.target.value });
+  };
+
+  const handleEditModalFile = (file: File) => {
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      setEditModalError('Only JPEG, PNG, GIF, or WEBP images are allowed.');
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setEditModalError('Image must be smaller than 5 MB.');
+      return;
+    }
+    setEditModalError('');
+    setEditProfileImage(file);
+    setEditPreviewUrl(URL.createObjectURL(file));
+  };
+
+  const handleEditModalDrag = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setEditDragActive(e.type === 'dragenter' || e.type === 'dragover');
+  };
+
+  const handleEditModalDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setEditDragActive(false);
+    if (e.dataTransfer.files?.[0]) handleEditModalFile(e.dataTransfer.files[0]);
+  };
+
+  const removeEditModalImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setEditProfileImage(null);
+    setEditPreviewUrl(null);
+    if (editFileInputRef.current) editFileInputRef.current.value = '';
+  };
+
+  const resetEditModal = () => {
+    setEditingUser(null);
+    setEditFormData({ name: '', email: '', contact: '', password: '', role: 'User' });
+    setEditProfileImage(null);
+    setEditPreviewUrl(null);
+    setEditModalError('');
+    setEditModalLoading(false);
+    setIsEditModalOpen(false);
+  };
+
+  const handleEditModalSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingUser) return;
+    setEditModalError('');
+    setEditModalLoading(true);
+
+    const data = new FormData();
+    data.append('name', editFormData.name);
+    data.append('email', editFormData.email);
+    data.append('phone', editFormData.contact);
+    data.append('role', editFormData.role);
+    if (editFormData.password) data.append('password', editFormData.password);
+    if (editProfileImage) data.append('profilePicture', editProfileImage);
+
+    try {
+      const result = await api.updateUser(editingUser.id, data);
+      if (result.success) {
+        const updatedUserRaw = result.data;
+        const updatedUserFormatted: User = {
+          id: updatedUserRaw._id,
+          fullName: updatedUserRaw.name,
+          email: updatedUserRaw.email,
+          username: updatedUserRaw.username,
+          contact: updatedUserRaw.phone,
+          profilePicture: updatedUserRaw.profilePicture,
+          status: updatedUserRaw.status,
+          role: updatedUserRaw.role,
+          joinedDate: new Date(updatedUserRaw.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
+        };
+        setUsers(prev => prev.map(u => u.id === editingUser.id ? updatedUserFormatted : u));
+        showSuccess('User updated successfully!');
+        resetEditModal();
+      } else {
+        showError('Failed to update user. Please try again.');
+      }
+    } catch (err: any) {
+      showError(err.message || 'Failed to update user');
+      setEditModalError(err.message || 'Failed to update user');
+    } finally {
+      setEditModalLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchUsers();
   }, []);
@@ -248,6 +367,7 @@ export default function AdminDashboard() {
             users={filteredUsers}
             onDelete={handleDelete}
             onStatusChange={handleStatusChange}
+            onEdit={handleEditClick}
           />
         )}
       </div>
@@ -386,6 +506,134 @@ export default function AdminDashboard() {
                 </button>
                 <button type="submit" className="btn-primary" disabled={modalLoading}>
                   {modalLoading ? 'Creating...' : 'Create User'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit User Modal */}
+      {isEditModalOpen && editingUser && (
+        <div className="modal-overlay" onClick={resetEditModal}>
+          <div className="modal-content animate-fade-in" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 className="modal-title">Edit User Profile</h2>
+              <button className="modal-close" onClick={resetEditModal}>
+                <X size={18} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleEditModalSubmit}>
+              <div className="modal-body">
+                {editModalError && <div className="alert alert-error">{editModalError}</div>}
+                
+                {/* Profile Picture Upload */}
+                <div className="field-group" style={{ marginBottom: '1rem' }}>
+                  <label className="field-label">Profile Picture <span className="optional-tag">optional</span></label>
+                  <div
+                    className={`upload-zone ${editDragActive ? 'upload-zone--active' : ''} ${editPreviewUrl ? 'upload-zone--filled' : ''}`}
+                    onDragEnter={handleEditModalDrag}
+                    onDragLeave={handleEditModalDrag}
+                    onDragOver={handleEditModalDrag}
+                    onDrop={handleEditModalDrop}
+                    onClick={() => editFileInputRef.current?.click()}
+                  >
+                    <input
+                      ref={editFileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/gif,image/webp"
+                      onChange={(e) => e.target.files?.[0] && handleEditModalFile(e.target.files[0])}
+                      style={{ display: 'none' }}
+                    />
+                    {editPreviewUrl ? (
+                      <div className="upload-preview">
+                        <img src={editPreviewUrl} alt="Preview" className="upload-preview-img" />
+                        <button type="button" className="upload-remove-btn" onClick={removeEditModalImage}>
+                          <X size={14} />
+                        </button>
+                        <p className="upload-hint">Click to change</p>
+                      </div>
+                    ) : (
+                      <div className="upload-placeholder">
+                        <ImagePlus size={24} className="upload-placeholder-icon" style={{ display: 'block', margin: '0 auto 0.5rem auto' }} />
+                        <p className="upload-main-text"><span className="upload-click-text">Click to upload</span> or drag & drop</p>
+                        <p className="upload-sub-text">JPEG, PNG, GIF or WEBP — max 5 MB</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="field-group">
+                  <label className="field-label" htmlFor="name">Full Name</label>
+                  <input
+                    id="name"
+                    type="text"
+                    className="field-input"
+                    placeholder="John Doe"
+                    value={editFormData.name}
+                    onChange={handleEditModalChange}
+                    required
+                  />
+                </div>
+
+                <div className="field-group">
+                  <label className="field-label" htmlFor="email">Email</label>
+                  <input
+                    id="email"
+                    type="email"
+                    className="field-input"
+                    placeholder="you@example.com"
+                    value={editFormData.email}
+                    onChange={handleEditModalChange}
+                    required
+                  />
+                </div>
+
+                <div className="field-group">
+                  <label className="field-label" htmlFor="contact">Phone Number</label>
+                  <PhoneInput
+                    id="contact"
+                    value={editFormData.contact}
+                    onChange={(val) => setEditFormData({ ...editFormData, contact: val })}
+                    required
+                  />
+                </div>
+
+                <div className="field-group">
+                  <label className="field-label" htmlFor="password">Password <span className="optional-tag">leave blank to keep current</span></label>
+                  <input
+                    id="password"
+                    type="password"
+                    className="field-input"
+                    placeholder="••••••••"
+                    value={editFormData.password}
+                    onChange={handleEditModalChange}
+                    minLength={6}
+                  />
+                </div>
+
+                <div className="field-group">
+                  <label className="field-label" htmlFor="role">Role</label>
+                  <select
+                    id="role"
+                    className="field-input"
+                    value={editFormData.role}
+                    onChange={handleEditModalChange}
+                    required
+                  >
+                    <option value="User">Regular User</option>
+                    <option value="Admin">Admin</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="modal-footer">
+                <button type="button" className="btn-outline" onClick={resetEditModal}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn-primary" disabled={editModalLoading}>
+                  {editModalLoading ? 'Saving...' : 'Save Changes'}
                 </button>
               </div>
             </form>

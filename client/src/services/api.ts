@@ -88,5 +88,18 @@ export const api = {
     });
     if (!response.ok) throw new Error('Failed to delete user');
     return response.json();
+  },
+
+  async updateUser(id: string, userData: FormData) {
+    const response = await fetch(`${API_URL}/users/${id}`, {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: userData,
+    });
+    const result = await response.json();
+    if (!response.ok) throw new Error(result.message || 'Failed to update user');
+    return result;
   }
 };

@@ -1,5 +1,5 @@
 const express = require("express");
-const { getUsers, updateUserStatus, deleteUser, createUser } = require("../controllers/user.controller");
+const { getUsers, updateUserStatus, deleteUser, createUser, updateUser } = require("../controllers/user.controller");
 const { protect, authorize } = require("../middlewares/auth.middleware");
 const upload = require("../middlewares/upload.middleware");
 
@@ -10,6 +10,7 @@ router.use(authorize("Admin"));
 
 router.get("/", getUsers);
 router.post("/", upload.single("profilePicture"), createUser);
+router.put("/:id", upload.single("profilePicture"), updateUser);
 router.put("/:id/status", updateUserStatus);
 router.delete("/:id", deleteUser);
 

@@ -6,6 +6,7 @@ interface UserTableProps {
   users: User[];
   onDelete: (id: string) => void;
   onStatusChange: (id: string, status: Status) => void;
+  onEdit: (user: User) => void;
 }
 
 const STATUSES: Status[] = ['Active', 'Inactive', 'Deleted'];
@@ -19,7 +20,7 @@ const STATUSES: Status[] = ['Active', 'Inactive', 'Deleted'];
  * @version 1.1.0
  * @component UserTable
  */
-export default function UserTable({ users, onDelete, onStatusChange }: UserTableProps) {
+export default function UserTable({ users, onDelete, onStatusChange, onEdit }: UserTableProps) {
   const API_URL = 'http://localhost:5000';
 
   const getAvatarSrc = (user: User) => {
@@ -110,7 +111,7 @@ export default function UserTable({ users, onDelete, onStatusChange }: UserTable
                       <UserCheck size={15} />
                     </button>
                   )}
-                  <button className="action-btn" title="Edit">
+                  <button className="action-btn" title="Edit" onClick={() => onEdit(user)}>
                     <Pencil size={15} />
                   </button>
                   <button className="action-btn delete" title="Delete" onClick={() => onDelete(user.id)}>
